@@ -1,0 +1,41 @@
+# ============================================
+# QCL-Launcher 开源范围：仅 UI 与介绍页面
+# 完整源码、构建产物、数据一律不公开
+# ============================================
+
+# ---- 源码（不公开）----
+src/
+installer/
+
+# ---- 构建与打包产物 ----
+build/
+dist/
+dist_setup/
+build.bat
+build.log
+QCL.spec
+*.pyc
+*.pyd
+*.pyz
+*.toc
+*.pkg
+*.zip
+*.jar
+*.exe
+
+# ---- 运行时数据 / 缓存 / 敏感配置 ----
+data/
+tools/
+updates/
+*.log
+
+# ---- 系统与编辑器 ----
+.workbuddy/
+__pycache__/
+*.pyo
+.DS_Store
+Thumbs.db
+
+# ---- 敏感配置（永不入库）----
+*.json
+host_preset.txt

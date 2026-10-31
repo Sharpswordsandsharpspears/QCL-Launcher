@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QCL 启动器 —— 一个开箱即用的 Minecraft 启动器</title>
+<style>
+  :root {
+    --accent: #2f6bff;
+    --accent-hover: #2457d6;
+    --accent-soft: #e8f0ff;
+    --bg: #f5f8fc;
+    --card: #ffffff;
+    --border: #e2e9f2;
+    --text: #1f2937;
+    --sub: #6b7a90;
+    --ok: #17b26a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: "Microsoft YaHei UI", "PingFang SC", "Segoe UI", -apple-system, sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+
+  /* ---------- 导航 ---------- */
+  nav {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+  }
+  nav .wrap { display: flex; align-items: center; height: 64px; }
+  .logo { font-size: 20px; font-weight: 800; letter-spacing: 1px; color: var(--accent); }
+  .logo span { color: var(--text); font-weight: 500; font-size: 13px; margin-left: 8px; letter-spacing: 0; }
+  nav .links { margin-left: auto; display: flex; gap: 26px; font-size: 14px; align-items: center; }
+  nav .links a { color: var(--sub); font-weight: 500; }
+  nav .links a:hover { color: var(--accent); }
+  nav .nav-btn { padding: 8px 18px; font-size: 14px; margin-left: 24px; white-space: nowrap; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--accent); color: #fff; font-weight: 600;
+    padding: 12px 26px; border-radius: 10px; font-size: 15px;
+    transition: background .15s ease, transform .15s ease;
+  }
+  .btn:hover { background: var(--accent-hover); transform: translateY(-1px); }
+  .btn.ghost { background: transparent; color: var(--accent); border: 1.5px solid var(--accent); }
+  .btn.ghost:hover { background: var(--accent-soft); transform: none; }
+  .btn.big { padding: 15px 32px; font-size: 16px; }
+
+  /* ---------- Hero ---------- */
+  header.hero {
+    background: linear-gradient(150deg, #eef4ff 0%, #e4edff 45%, #f5f8fc 100%);
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .hero .wrap { padding: 72px 24px 64px; text-align: center; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: #fff; border: 1px solid var(--border); border-radius: 999px;
+    padding: 6px 14px; font-size: 13px; color: var(--sub); margin-bottom: 22px;
+  }
+  .badge b { color: var(--accent); }
+  .hero h1 { font-size: 46px; font-weight: 800; letter-spacing: 1px; }
+  .hero h1 .qcl { color: var(--accent); }
+  .hero .tag { font-size: 18px; color: var(--sub); max-width: 640px; margin: 18px auto 0; }
+  .hero .cta { margin-top: 34px; display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .hero .meta { margin-top: 26px; font-size: 13px; color: #9aa6b5; }
+
+  /* 特性数据条 */
+  .stats {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+    margin: -34px auto 0; max-width: 1080px; padding: 0 24px 0;
+  }
+  .stat {
+    background: #fff; border: 1px solid var(--border); border-radius: 14px;
+    padding: 20px; text-align: center; box-shadow: 0 6px 20px rgba(47,107,255,.06);
+  }
+  .stat .num { font-size: 26px; font-weight: 800; color: var(--accent); }
+  .stat .lbl { font-size: 13px; color: var(--sub); margin-top: 4px; }
+
+  /* ---------- 板块 ---------- */
+  section { padding: 72px 0; }
+  .sec-head { text-align: center; margin-bottom: 44px; }
+  .sec-head h2 { font-size: 32px; font-weight: 800; }
+  .sec-head p { color: var(--sub); margin-top: 10px; max-width: 620px; margin-left: auto; margin-right: auto; }
+
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+    padding: 28px 24px; transition: box-shadow .2s ease, transform .2s ease;
+  }
+  .card:hover { box-shadow: 0 12px 32px rgba(47,107,255,.12); transform: translateY(-3px); }
+  .icon {
+    width: 46px; height: 46px; border-radius: 12px; background: var(--accent-soft);
+    display: flex; align-items: center; justify-content: center; margin-bottom: 16px;
+  }
+  .icon svg { width: 24px; height: 24px; stroke: var(--accent); }
+  .card h3 { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+  .card p { font-size: 14px; color: var(--sub); }
+
+  /* 高亮大块 */
+  .feature-split {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center;
+    background: #fff; border: 1px solid var(--border); border-radius: 20px;
+    padding: 48px; box-shadow: 0 10px 34px rgba(47,107,255,.07);
+  }
+  .feature-split h3 { font-size: 24px; font-weight: 800; margin-bottom: 12px; }
+  .feature-split p { color: var(--sub); margin-bottom: 14px; }
+  .feature-split ul { list-style: none; }
+  .feature-split li { padding-left: 24px; position: relative; margin-bottom: 8px; color: #334155; font-size: 14.5px; }
+  .feature-split li::before { content: "✓"; position: absolute; left: 0; color: var(--ok); font-weight: 700; }
+
+  .mock {
+    background: linear-gradient(160deg, #ffffff, #eef4ff);
+    border: 1px solid var(--border); border-radius: 16px; padding: 22px;
+    box-shadow: 0 14px 40px rgba(47,107,255,.10);
+  }
+  .mock .bar { display: flex; gap: 6px; margin-bottom: 16px; }
+  .mock .bar i { width: 10px; height: 10px; border-radius: 50%; background: #e2e9f2; }
+  .mock .bar i:first-child { background: #f6b9c4; }
+  .mock .bar i:nth-child(2) { background: #ffe1a8; }
+  .mock .bar i:nth-child(3) { background: #b8e6c8; }
+  .mock .row { height: 12px; border-radius: 6px; background: #e8eef6; margin-bottom: 10px; }
+  .mock .row.accent { background: var(--accent); width: 55%; }
+  .mock .row.w60 { width: 60%; } .mock .row.w40 { width: 40%; } .mock .row.w80 { width: 80%; }
+
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .step { text-align: center; padding: 28px 18px; }
+  .step .n {
+    width: 40px; height: 40px; border-radius: 50%; background: var(--accent);
+    color: #fff; font-weight: 700; font-size: 18px; display: flex; align-items: center;
+    justify-content: center; margin: 0 auto 14px;
+  }
+  .step h4 { font-size: 15px; margin-bottom: 6px; }
+  .step p { font-size: 13px; color: var(--sub); }
+
+  /* 下载 */
+  #download { background: linear-gradient(150deg, #2f6bff 0%, #2457d6 100%); color: #fff; }
+  #download h2 { color: #fff; }
+  #download .sec-head p { color: rgba(255,255,255,.8); }
+  #download .dl-card {
+    background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.25);
+    border-radius: 18px; padding: 40px; text-align: center; max-width: 560px; margin: 0 auto;
+  }
+  #download .dl-card .v { font-size: 14px; opacity: .85; margin-bottom: 20px; }
+  #download .btn { background: #fff; color: var(--accent); }
+  #download .btn:hover { background: #eef4ff; }
+  .req { margin-top: 22px; font-size: 13px; opacity: .8; display: flex; justify-content: center; gap: 18px; flex-wrap: wrap; }
+
+  footer { background: #fff; border-top: 1px solid var(--border); padding: 36px 0; text-align: center; color: var(--sub); font-size: 13px; }
+  footer .logo { font-size: 16px; }
+
+  /* ---------- 更新日志 ---------- */
+  .changelog { max-width: 720px; margin: 0 auto; }
+  .ver {
+    background: #fff; border: 1px solid var(--border); border-radius: 16px;
+    padding: 34px 38px; box-shadow: 0 8px 26px rgba(47,107,255,.05);
+  }
+  .ver-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 20px; flex-wrap: wrap; }
+  .ver-tag {
+    background: var(--accent); color: #fff; font-weight: 700; font-size: 14px;
+    padding: 5px 16px; border-radius: 999px;
+  }
+  .ver-tag.old { background: var(--accent-soft); color: var(--accent); }
+  .ver-date { color: var(--sub); font-size: 13px; }
+  .ver h4 { font-size: 15px; font-weight: 700; margin: 20px 0 8px; color: var(--text); }
+  .ver h4:first-of-type { margin-top: 0; }
+  .ver ul { list-style: none; }
+  .ver li { padding-left: 22px; position: relative; margin-bottom: 7px; color: #334155; font-size: 14.5px; }
+  .ver li::before { content: "·"; position: absolute; left: 9px; top: -1px; color: var(--accent); font-weight: 800; font-size: 18px; }
+
+  @media (max-width: 800px) {
+    .grid { grid-template-columns: 1fr 1fr; }
+    .stats { grid-template-columns: 1fr 1fr; }
+    .feature-split { grid-template-columns: 1fr; padding: 28px; }
+    .steps { grid-template-columns: 1fr; }
+    .hero h1 { font-size: 34px; }
+    nav .links { display: none; }
+  }
+  @media (max-width: 520px) {
+    .grid { grid-template-columns: 1fr; }
+    .stats { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 导航 -->
+<nav>
+  <div class="wrap">
+    <div class="logo">QCL<span>启动器</span></div>
+    <div class="links">
+      <a href="#top">首页</a>
+      <a href="#features">功能</a>
+      <a href="#screens">界面</a>
+      <a href="#ai">AI 助手</a>
+      <a href="#multiplayer">联机</a>
+      <a href="#changelog">更新日志</a>
+      <a href="#download">下载</a>
+      <a href="https://docs.qq.com/doc/DY2NXeFVrcVp2Q3dL" target="_blank" rel="noopener">文档</a>
+      <a class="btn nav-btn" href="https://developer4.lanrar.com/file/?BmAAPg8+BDUJAAI6AjcBbVJtVGxQXlcWB0xTe1RyWjJXJwd2XmUPMgkzAzBQW1I6W2UAOFE9BTUFNQQ0UjoBMAY/AGUPYwR2CTkCJwJrATNSO1RjUDpXZQc4U2xUP1p9VycHIF4+D2kJbwNnUDJSfFswADVRIQU0BTIELVJvAWUGMABlDzYEYAltAmACbgE5Um1UaFA4VzEHZVNmVDBabFdiBzReMQ85CTsDM1A2UmZbNAAwUTsFZgU7BDJSIAF6Bm8AJw90BCUJLAIxAiQBaVJsVGxQOldgBzFTZlQ5WmtXZQd2XncPMgkyAzBQYlJuWzAAMlE3BTQFNgQyUjYBNgY/AGQPfAR+CXkCMgI6AXdSNVRhUClXIAdwUyJUNVpqV2AHaV4wD2gJaANmUDNSa1s1ACNRewVuBXIEP1I/ATIGNgB5D2AEZAltAnoCZwE3UjtUf1A/V3sHJlMxVGdaLFc5Bw9eYA8wCWIDZVAqUnVbdQB8UX4FYgVdBHdSbwE9BjY=&amp;toolsdown" target="_blank" rel="noopener">下载</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero -->
+<header class="hero" id="top">
+  <div class="wrap">
+    <div class="badge">✦ 全新 <b>蓝白</b> 界面 · 单文件安装 · 免费使用</div>
+    <h1><span class="qcl">QCL</span> 启动器</h1>
+    <p class="tag">一个开箱即用的 Minecraft 启动器 —— 版本实时同步、Mod 一键下载、实例完全隔离、内置虚拟网联机，还有一个懂 Minecraft 的 AI 助手。</p>
+    <div class="cta">
+      <a class="btn big" href="https://developer4.lanrar.com/file/?BmAAPg8+BDUJAAI6AjcBbVJtVGxQXlcWB0xTe1RyWjJXJwd2XmUPMgkzAzBQW1I6W2UAOFE9BTUFNQQ0UjoBMAY/AGUPYwR2CTkCJwJrATNSO1RjUDpXZQc4U2xUP1p9VycHIF4+D2kJbwNnUDJSfFswADVRIQU0BTIELVJvAWUGMABlDzYEYAltAmACbgE5Um1UaFA4VzEHZVNmVDBabFdiBzReMQ85CTsDM1A2UmZbNAAwUTsFZgU7BDJSIAF6Bm8AJw90BCUJLAIxAiQBaVJsVGxQOldgBzFTZlQ5WmtXZQd2XncPMgkyAzBQYlJuWzAAMlE3BTQFNgQyUjYBNgY/AGQPfAR+CXkCMgI6AXdSNVRhUClXIAdwUyJUNVpqV2AHaV4wD2gJaANmUDNSa1s1ACNRewVuBXIEP1I/ATIGNgB5D2AEZAltAnoCZwE3UjtUf1A/V3sHJlMxVGdaLFc5Bw9eYA8wCWIDZVAqUnVbdQB8UX4FYgVdBHdSbwE9BjY=&amp;toolsdown" target="_blank" rel="noopener">下载 Windows 安装包</a>
+      <a class="btn big ghost" href="#features">查看功能</a>
+      <a class="btn big ghost" href="https://docs.qq.com/doc/DY2NXeFVrcVp2Q3dL" target="_blank" rel="noopener">官方文档</a>
+    </div>
+    <div class="meta">支持正式版 / 快照 / 预览版 · 无需正版也能离线游玩 · 兼容 Windows 10 / 11 · 直链下载</div>
+  </div>
+</header>
+
+<!-- 数据 -->
+<div class="stats">
+  <div class="stat"><div class="num">实时</div><div class="lbl">同步 Mojang 官方版本</div></div>
+  <div class="stat"><div class="num">5 类</div><div class="lbl">Mod / 光影 / 资源包 / 数据包 / 插件</div></div>
+  <div class="stat"><div class="num">隔离</div><div class="lbl">每个版本互不干扰</div></div>
+  <div class="stat"><div class="num">AI</div><div class="lbl">一句话配好整合包</div></div>
+</div>
+
+<!-- 功能 -->
+<section id="features">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>核心能力</h2>
+      <p>从下载版本到装 Mod、从联机到查攻略，一个启动器全搞定。</p>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9"/><path d="M21 3v6h-6"/></svg></div>
+        <h3>版本实时同步</h3>
+        <p>直接读取 Mojang 官方版本清单，官网一出新版本就能立即看到并下载，正式版、快照、预览版全支持。</p>
+      </div>
+      <div class="card">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg></div>
+        <h3>内容一键下载</h3>
+        <p>Mod、光影、资源包、数据包、插件，从 Modrinth / CurseForge 一键下载安装，自动解析依赖，装错自动回落。</p>
+      </div>
+      <div class="card">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"/><path d="M4 9h16"/><path d="M9 9v11"/></svg></div>
+        <h3>实例完全隔离</h3>
+        <p>每个版本 / 加载器组合都是独立实例，Mod 与存档互不干扰，随时切换，再也不用反复搬运文件。</p>
+      </div>
+      <div class="card">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18"/></svg></div>
+        <h3>虚拟网联机</h3>
+        <p>登录账号即可跨网络加入好友的世界，内置局域网自动发现，支持 IPv4 / IPv6 双栈，有公网 IPv6 就能开服。</p>
+      </div>
+      <div class="card">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+        <h3>内置社区</h3>
+        <p>论坛发帖问答 + 实时聊天室，数据挂在主机上，自己开主机就是自己当服主，大家连同一个地址就是同一个社区。</p>
+      </div>
+      <div class="card">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/><circle cx="12" cy="12" r="3"/></svg></div>
+        <h3>AI 助手</h3>
+        <p>一句话生成整合包，自动挑版本 / 加载器 / Mod 并逐个联网校验；问版本特性、Mod 用法、报错排查也都能答。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 界面一览 -->
+<section id="screens">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>界面一览</h2>
+      <p>全部为真实运行截图，点击可放大查看。</p>
+    </div>
+    <div class="shots">
+      <figure class="shot" onclick="zoom('screens/13-game.png')">
+        <img src="screens/13-game.png" loading="lazy" alt="游戏运行画面">
+        <figcaption>真实运行画面 · Minecraft 26.2 + NeoForge（QCL 一键启动，2 个 Mod 已加载）</figcaption>
+      </figure>
+      <figure class="shot" onclick="zoom('screens/01-home.png')">
+        <img src="screens/01-home.png" loading="lazy" alt="首页">
+        <figcaption>首页 · 账号与一键启动</figcaption>
+      </figure>
+      <figure class="shot" onclick="zoom('screens/02-versions.png')">
+        <img src="screens/02-versions.png" loading="lazy" alt="游戏版本">
+        <figcaption>游戏版本 · Mojang 官方版本实时同步</figcaption>
+      </figure>
+      <figure class="shot" onclick="zoom('screens/03-content.png')">
+        <img src="screens/03-content.png" loading="lazy" alt="内容中心">
+        <figcaption>内容中心 · Modrinth / CurseForge 一键安装</figcaption>
+      </figure>
+      <figure class="shot" onclick="zoom('screens/04-instances.png')">
+        <img src="screens/04-instances.png" loading="lazy" alt="实例管理">
+        <figcaption>实例管理 · 每个版本完全隔离</figcaption>
+      </figure>
+      <figure class="shot" onclick="zoom('screens/05-ai-generate.png')">
+        <img src="screens/05-ai-generate.png" loading="lazy" alt="AI 助手 · 一句话生成实例">
+        <figcaption>AI 助手 · 一句话生成整合包</figcaption>
+      </figure>
+      <figure class="shot" onclick="zoom('screens/06-ai-ask.png')">
+        <img src="screens/06-ai-ask.png" loading="lazy" alt="AI 助手 · 问一句">
+        <figcaption>AI 助手 · 联网问答（附参考来源）</figcaption>
+      </figure>
+      <figure class="shot" onclick="zoom('screens/07-multiplayer.png')">
+        <img src="screens/07-multiplayer.png" loading="lazy" alt="联机 · 虚拟网">
+        <figcaption>联机 · 虚拟网（账号 / 好友 / 房间）</figcaption>
+      </figure>
+      <figure class="shot" onclick="zoom('screens/08-lan.png')">
+        <img src="screens/08-lan.png" loading="lazy" alt="联机 · 局域网">
+        <figcaption>联机 · 局域网自动发现 / 服务器列表</figcaption>
+      </figure>
+      <figure class="shot" onclick="zoom('screens/09-forum.png')">
+        <img src="screens/09-forum.png" loading="lazy" alt="社区 · 论坛">
+        <figcaption>社区 · 论坛</figcaption>
+      </figure>
+      <figure class="shot" onclick="zoom('screens/10-chat.png')">
+        <img src="screens/10-chat.png" loading="lazy" alt="社区 · 聊天室">
+        <figcaption>社区 · 实时聊天室</figcaption>
+      </figure>
+      <figure class="shot" onclick="zoom('screens/11-settings-host.png')">
+        <img src="screens/11-settings-host.png" loading="lazy" alt="设置 · 主机">
+        <figcaption>设置 · 游戏目录 / 主机地址（局域网 &amp; 公网 IPv6）</figcaption>
+      </figure>
+      <figure class="shot" onclick="zoom('screens/12-settings-launch.png')">
+        <img src="screens/12-settings-launch.png" loading="lazy" alt="设置 · 启动">
+        <figcaption>设置 · 内存 / Java / 镜像源</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- AI 助手 高亮 -->
+<section id="ai" style="background:#fff; border-top:1px solid var(--border); border-bottom:1px solid var(--border);">
+  <div class="wrap">
+    <div class="feature-split" style="box-shadow:none; border:none; padding:0;">
+      <div>
+        <div class="badge" style="margin-bottom:16px;">🤖 亮点功能</div>
+        <h3>一句话，配好一个整合包</h3>
+        <p>不用再去网上扒教程、找 Mod、对版本号。输入一句大白话，剩下的交给 QCL：</p>
+        <ul>
+          <li>输入「低配电脑想让游戏流畅一点」→ 自动给出优化方案</li>
+          <li>自动挑选 MC 版本、加载器、建议内存</li>
+          <li>生成一份 <b>经过 Modrinth 逐个校验</b> 的 Mod 清单</li>
+          <li>一键创建实例并安装，直接开玩</li>
+          <li>没有 AI 也能用：内置方案库，离线照样出方案</li>
+        </ul>
+      </div>
+      <div class="mock" style="padding:0; overflow:hidden;">
+        <img src="screens/05-ai-generate.png" loading="lazy" alt="AI 一句话生成整合包">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 联机 & 社区 -->
+<section id="multiplayer">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>联机与社区</h2>
+      <p>想和朋友一起玩？开个房间就行，跨网络也能连。</p>
+    </div>
+    <div class="feature-split">
+      <div class="mock" style="padding:0; overflow:hidden;">
+        <img src="screens/07-multiplayer.png" loading="lazy" alt="虚拟网联机">
+      </div>
+      <div>
+        <h3>虚拟网 + 局域网 + 社区</h3>
+        <ul>
+          <li>登录 QCL 账号 → 输入好友用户名即可加入对方的世界</li>
+          <li>同一网络下自动发现开放到局域网的世界</li>
+          <li>内置论坛：发帖提问、分享整合包，别人可回复</li>
+          <li>实时聊天室：3 秒增量拉取，自己发的消息立刻出现</li>
+          <li>主机即服务器：自己开主机就是自己当服主</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 自动更新 -->
+<section style="background:#fff; border-top:1px solid var(--border);">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>自动更新，发布不求人</h2>
+      <p>适合想把自己的整合包分发给玩家的场景。</p>
+    </div>
+    <div class="feature-split" style="box-shadow:none; border:none; padding:0;">
+      <div>
+        <h3>一键发布，自动送达</h3>
+        <ul>
+          <li>发布者在主机上点「发布新版本」，打包上传一步完成</li>
+          <li>客户端启动 / 定时检查时自动弹出更新提示</li>
+          <li>一键下载、自动替换、自动重启</li>
+          <li>支持可选更新 / 强制更新两种模式</li>
+        </ul>
+      </div>
+      <div class="mock" style="padding:0; overflow:hidden;">
+        <img src="screens/09-forum.png" loading="lazy" alt="自动更新发布">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 更新日志 -->
+<section id="changelog" style="background:#fff; border-top:1px solid var(--border);">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>更新日志</h2>
+      <p>持续打磨，每次更新都让启动更顺一点。</p>
+    </div>
+    <div class="changelog">
+      <div class="ver">
+        <div class="ver-head">
+          <span class="ver-tag">v1.0.0</span>
+          <span class="ver-date">2026-10-30 · 首个正式版</span>
+        </div>
+        <h4>🚀 下载与实例</h4>
+        <ul>
+          <li>Minecraft 版本同步，Java 自动下载，免手动配置</li>
+          <li>实例隔离，多版本 / 多 Mod 组合互不干扰，一键创建删除</li>
+          <li>内置 CurseForge / Modrinth 搜索与安装</li>
+          <li>Forge / NeoForge 一键安装，含国内镜像加速</li>
+        </ul>
+        <h4>🤖 AI 助手</h4>
+        <ul>
+          <li>一句话描述，自动生成整合包方案（含 Mod 清单）</li>
+          <li>AI 问答，联网检索，中英文 Wiki 都能查</li>
+        </ul>
+        <h4>🌐 联机与社区</h4>
+        <ul>
+          <li>虚拟网联机，主机即服务器，免端口映射</li>
+          <li>局域网 + 公网 IPv6 双栈支持</li>
+          <li>内置论坛 + 实时聊天</li>
+        </ul>
+        <h4>✨ 体验</h4>
+        <ul>
+          <li>全新蓝白浅色主题</li>
+          <li>自动更新：一键发布、自动送达</li>
+          <li>单文件安装程序：自定义路径、自带卸载、升级不丢存档</li>
+          <li>修复多项启动闪退与稳定性问题</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 下载 -->
+<section id="download">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>开始使用</h2>
+      <p>单文件安装程序，双击即装，自带卸载，存档数据单独存放、升级不丢。</p>
+    </div>
+    <div class="dl-card">
+      <div class="v">最新版 QCL-Setup-1.0.0.exe · 约 42 MB</div>
+      <a class="btn big" href="https://developer4.lanrar.com/file/?BmAAPg8+BDUJAAI6AjcBbVJtVGxQXlcWB0xTe1RyWjJXJwd2XmUPMgkzAzBQW1I6W2UAOFE9BTUFNQQ0UjoBMAY/AGUPYwR2CTkCJwJrATNSO1RjUDpXZQc4U2xUP1p9VycHIF4+D2kJbwNnUDJSfFswADVRIQU0BTIELVJvAWUGMABlDzYEYAltAmACbgE5Um1UaFA4VzEHZVNmVDBabFdiBzReMQ85CTsDM1A2UmZbNAAwUTsFZgU7BDJSIAF6Bm8AJw90BCUJLAIxAiQBaVJsVGxQOldgBzFTZlQ5WmtXZQd2XncPMgkyAzBQYlJuWzAAMlE3BTQFNgQyUjYBNgY/AGQPfAR+CXkCMgI6AXdSNVRhUClXIAdwUyJUNVpqV2AHaV4wD2gJaANmUDNSa1s1ACNRewVuBXIEP1I/ATIGNgB5D2AEZAltAnoCZwE3UjtUf1A/V3sHJlMxVGdaLFc5Bw9eYA8wCWIDZVAqUnVbdQB8UX4FYgVdBHdSbwE9BjY=&amp;toolsdown" target="_blank" rel="noopener">下载 Windows 安装包</a>
+      <div style="margin-top:18px; font-size:15px;">直链若失效，备用下载：<a href="https://wwapj.lanzouc.com/b01i5ybyza" target="_blank" rel="noopener" style="color:#fff; text-decoration:underline;">蓝奏云分享页</a> · 密码 <b onclick="copyPwd()" style="color:#fff; letter-spacing:2px; font-size:18px; cursor:pointer;">qcl</b>（点击复制）</div>
+      <div style="margin-top:14px; font-size:13px; opacity:.85; line-height:1.7;">💡 浏览器（Edge / Chrome）若提示「已阻止不安全的下载」，请点 <b>「保留」</b> 继续 —— 程序未购买数字签名证书，属正常提示，文件来自官方发布。</div>
+      <div class="req">
+        <span>✅ Windows 10 / 11</span>
+        <span>✅ Java 自动下载</span>
+        <span>✅ 免管理员权限</span>
+      </div>
+    </div>
+    <div class="steps" style="margin-top:44px;">
+      <div class="step"><div class="n">1</div><h4>下载安装包</h4><p>单文件，双击运行</p></div>
+      <div class="step"><div class="n">2</div><h4>选择安装位置</h4><p>可自定义，默认装在用户目录</p></div>
+      <div class="step"><div class="n">3</div><h4>开始游戏</h4><p>挑个版本，装个 Mod，直接开玩</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 免责声明 -->
+<section id="disclaimer" style="background:#fff; border-top:1px solid var(--border); padding:48px 0;">
+  <div class="wrap" style="max-width:780px;">
+    <h2 style="font-size:22px; font-weight:800; text-align:center; margin-bottom:22px;">免责声明</h2>
+    <ol style="color:var(--sub); font-size:14px; line-height:2; padding-left:22px; margin:0;">
+      <li>QCL 启动器为完全公益免费的启动器，如果在启动器内 / 启动的游戏内进行消费，QCL 启动器不给予补偿。</li>
+      <li>如果在网上看到有人出售启动器安装包 / .bat 脚本，请勿购买；如购买并运行，带来的责任自行承担。</li>
+      <li>本项目仅开放 UI 部分（界面、样式）供学习与二创使用；如需开源、二次分发或转载 UI 相关资源，请先联系作者 ccw_wemmbu@yeah.net 获取授权。未经允许，禁止私自开源、反编译或逆向本软件的全部源码，违者 QCL 开发团队保留依法追究其法律责任的权利。</li>
+      <li>如有疑问，最终解释权归 QCL 开发团队所有。</li>
+      <li>开发者保留随时修改本协议的权利。</li>
+      <li>使用本软件即代表您已阅读并同意以上条款。</li>
+    </ol>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="logo" style="margin-bottom:8px;">QCL<span>启动器</span></div>
+    <div>一个开箱即用的 Minecraft 启动器 · 与 Mojang / Microsoft 无关联</div>
+    <div style="margin-top:6px; opacity:.7;">版本同步 · 一键下载 · 实例隔离 · 虚拟网联机 · AI 助手 · 自动更新</div>
+    <div style="margin-top:20px; font-size:14px; opacity:.95;">
+      联系我们：<a href="mailto:ccw_wemmbu@yeah.net" style="color:var(--accent); font-weight:600;">ccw_wemmbu@yeah.net</a>
+    </div>
+  </div>
+</footer>
+
+<div id="lightbox" onclick="this.style.display='none'"><img id="lbimg" alt=""></div>
+<script>
+function zoom(src){
+  var l = document.getElementById('lightbox');
+  document.getElementById('lbimg').src = src;
+  l.style.display = 'flex';
+}
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape') document.getElementById('lightbox').style.display = 'none';
+});
+
+/* ---------- 点击下载按钮自动复制提取码 ---------- */
+(function(){
+  var PWD = 'qcl';
+  // 提取码展示处也顺手可点（下载区那个白色密码）
+  var style = document.createElement('style');
+  style.textContent = '#pwd-toast{position:fixed;left:50%;bottom:36px;transform:translateX(-50%) translateY(20px);background:#1f2937;color:#fff;padding:11px 22px;border-radius:999px;font-size:14px;opacity:0;pointer-events:none;transition:all .25s ease;z-index:99;box-shadow:0 10px 30px rgba(0,0,0,.25);}#pwd-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}';
+  document.head.appendChild(style);
+  var toast = document.createElement('div');
+  toast.id = 'pwd-toast';
+  document.body.appendChild(toast);
+  var timer = null;
+  window.showPwdToast = function(msg){
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(timer);
+    timer = setTimeout(function(){ toast.classList.remove('show'); }, 2200);
+  };
+  window.copyPwd = function(){
+    var done = function(){ showPwdToast('✓ 提取码 ' + PWD + ' 已复制，粘贴即可'); };
+    var fail = function(){ showPwdToast('提取码：' + PWD + '（请手动复制）'); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(PWD).then(done, function(){
+        // http 或权限拒绝时降级
+        legacy() ? done() : fail();
+      });
+    } else { legacy() ? done() : fail(); }
+    function legacy(){
+      try {
+        var ta = document.createElement('textarea');
+        ta.value = PWD;
+        ta.style.cssText = 'position:fixed;opacity:0;';
+        document.body.appendChild(ta);
+        ta.select();
+        var ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        return ok;
+      } catch(e){ return false; }
+    }
+  };
+  // 所有指向蓝奏云的下载按钮：跳转的同时复制提取码
+  document.querySelectorAll('a[href*="lanzouc"]').forEach(function(a){
+    a.addEventListener('click', window.copyPwd);
+  });
+})();
+</script>
+
+</body>
+</html>
